@@ -1,0 +1,42 @@
+import imaplib
+import datetime
+import base64
+import os
+import email
+import pandas as pd
+from pyxlsb import open_workbook as open_xlsb
+
+now = datetime.datetime.now()
+un = 'myemail'
+pw = 'mypassword'
+url = 'imap.gmail.com'
+m = imaplib.IMAP4_SSL(url,993)
+
+m.login(un,pw)
+m.select("INBOX")
+my_subject = '(SUBJECT "subjectthatiwant")'
+result, data = m.search(None, my_subject)
+
+prices = data[0]
+price_list = prices.split()
+
+for num in prices.split():
+    typ, data = m.fetch(num, '(RFC822)' )
+    raw_email = prices[1]
+    full_email = email.message_from_string(str(raw_email))
+
+for response_part in data:
+        if isinstance(response_part, tuple):
+            msg = email.message_from_string(response_part[1].decode('utf-8'))
+            email_from = msg['from']
+            email_subj = msg['subject']
+            c = msg.get_payload(0)
+
+path1 = 'D:'
+path2 = 'PytoProjecto'
+mfix = now.strftime('%#m-%#d-%y')
+xl_filename = ((("Dispatch") + (" ") + ('Sheet') + (' ') + ('for') + (' ')) + (mfix) + ('.xlsb'))
+xl_path = os.path.join(path1, path2, xl_filename)
+df = pd.DataFrame(c)
+wb = open_xlsb(xl_path)
+df.to_excel(wb)
