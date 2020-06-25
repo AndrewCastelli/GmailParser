@@ -19,40 +19,38 @@ def separate_content(filename, email_parts, dictionary, directory):
         print('Downloading Attachment(s)')
         print(filename)
         path = os.path.join(directory, filename)
+        
         # Split names, add random digits to avoid identical names
-        deal_with_pdf(directory, filename)
         while os.path.isfile(path):
             split_name = filename.split('.')
-            filename = split_name[0] + str(random.randint(0, 100)) + '.' + split_name[1]
+            filename = split_name[0] + '_' + str(random.randint(0, 99)) + '.' + split_name[1]
+            path = os.path.join(directory, filename)
+
         fp = open(path, 'wb')
         dictionary['attachments'].append(filename)
         fp.write(email_parts.get_payload(decode=True))
-        # Check for pdf, pull text from it - if exists
+        fp.close()
+        # Finally, check if attachment is a pdf - get text if it is
+        deal_with_pdf(directory, filename)
 
     else:  # save plain text and html to our dictionary
         if email_parts.get_content_type() == 'text/plain':
             dictionary['body_plain'] = email_parts.get_payload(decode=True).decode('utf-8')
-            print('Writing plain body')
+
         elif email_parts.get_content_type() == 'text/html':
             dictionary['body_html'] = email_parts.get_payload(decode=True).decode('utf-8')
-            print('Writing html body')
 
 
 def deal_with_pdf(path, filename):
     """
     :param path: Path to pdf attachment saved with separate_contents().
-    :param filename: Filename grabbed with parse_email().
+    :param filename: Filename grabbed .get_filename() in parse_email().
     :return: Content of pdf as text.
     """
     if '.pdf' in filename:
         path = os.path.join(path, filename)
         raw = parser.from_file(path, service='text')
-        raw = str(raw['content'])
-        pdf_text = raw.encode('utf-8', errors='ignore')
-        pdf_text = str(pdf_text).replace("\n", "").replace("\\", "")
-        print('-' * 20)
-        print('Printing PDF text')
-        print('-' * 20)
+        pdf_text = str(raw['content'])
         print(pdf_text)
         return pdf_text
     else:
@@ -96,11 +94,12 @@ def parse_email():
             filename = part.get_filename()
             separate_content(filename, part, parsed_dict, storage_dir)
 
+        print(parsed_dict)
         return parsed_dict
 
 
 if __name__ == '__main__':
 
-    print(parse_email())
+    parse_email()
 
 
