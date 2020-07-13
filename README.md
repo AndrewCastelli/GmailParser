@@ -6,6 +6,7 @@ All you need to know:
 - Must have Java installed to use the tika module necessary to parse text from PDF documents.
 - Must have IMAPLIB enabled in gmail options to allow gmail automation.
 - Easily edit the input statements to strings of your desired login info, folder info, and directory info.
+- Email Folder will default to INBOX if you don't (need to) specify.
 
 Goal of the program:
 - Easily pull text from emails.
